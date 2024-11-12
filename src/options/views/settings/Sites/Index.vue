@@ -46,6 +46,12 @@
           {{$t('settings.sites.index.resetFavicons')}}
         </v-btn>
 
+        <v-btn color="purple" to="/mind" >
+          <v-icon class="mr-2">timeline</v-icon>
+          {{$t('settings.sites.index.ptMindMap')}}
+        </v-btn>
+
+
         <v-spacer></v-spacer>
         <v-text-field class="search" append-icon="search" label="Search" single-line hide-details></v-text-field>
       </v-card-title>

@@ -122,6 +122,11 @@ export default new Router({
       component: () => import("./views/UserDataTimeline.vue")
     },
     {
+      path: "/mind",
+      name: "mind",
+      component: () => import("./views/MindMap/Index.vue")
+    },
+    {
       path: "/statistic/:host?",
       name: "statistic",
       component: () => import("./views/statisticCharts/SiteBase.vue")
