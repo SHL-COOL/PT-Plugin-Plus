@@ -44,11 +44,15 @@ export default Vue.extend({
     this.mindMap = new MindMap({
       el: document.getElementById("mindMapContainer"),
       tagPosition: "bottom",
-      readonly: true,
       fit: true,
       mousewheelAction: "zoom",
       emptyTextMeasureHeightText: "",
+      textAutoWrapWidth: 1000,
+      enableFreeDrag: false,
+      fitPadding: 128
     });
+
+    console.log(this.mindMap);
 
     // @ts-ignore
     if (MapData.root) {
