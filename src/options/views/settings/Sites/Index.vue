@@ -46,8 +46,8 @@
           {{$t('settings.sites.index.resetFavicons')}}
         </v-btn>
 
-        <v-btn color="purple" to="/mind" >
-          <v-icon class="mr-2">timeline</v-icon>
+         <v-btn color="info" to="/mind" >
+          <v-icon class="mr-2">account_tree</v-icon>
           {{$t('settings.sites.index.ptMindMap')}}
         </v-btn>
 
