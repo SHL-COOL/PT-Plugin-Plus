@@ -40,6 +40,8 @@
       "export": "Export",
       "import": "Import",
       "share": "Share",
+      "fullScreen": "FullScreen",
+      "rePosition": "RePosition",
       "actionConfirm": "Are you sure you want to do this?",
       "importFailed": "Import failed",
       "importSuccess": "Import success",

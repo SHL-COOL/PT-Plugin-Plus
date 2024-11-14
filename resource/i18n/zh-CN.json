@@ -37,6 +37,8 @@
       "export": "导出",
       "import": "导入",
       "share": "分享",
+      "fullScreen": "全屏",
+      "rePosition": "复位",
       "actionConfirm": "确认要进行此操作吗？",
       "importFailed": "导入失败",
       "importSuccess": "已成功导入",

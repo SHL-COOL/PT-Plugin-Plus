@@ -1,43 +1,39 @@
 <template>
   <div class="container">
     <div class="toolbarContainer">
-      <div class="toolbar">
-        <div class="toolbarBlock px-3 py-2" >
-          <v-btn
-              class="toolbarBtn"
-              @click="backToRoot"
-            >
-              复位
-              <v-icon>my_location</v-icon>
-            </v-btn>
+      <div v-if="!Loading" class="toolbar">
+        <div class="toolbarBlock px-3 py-2">
+          <v-btn class="toolbarBtn" @click="backToRoot">
+            {{ $t('common.rePosition')}} 
+            <v-icon>my_location</v-icon>
+          </v-btn>
 
-            <v-btn
-              class="toolbarBtn"
-              @click="toFullscreenShow"
-            >
-              全屏
-              <v-icon>fullscreen</v-icon>
-            </v-btn>
+          <v-btn class="toolbarBtn" @click="toFullscreenShow">
+            {{ $t('common.fullScreen')}} 
+            <v-icon>fullscreen</v-icon>
+          </v-btn>
 
-            <v-btn
-              class="toolbarBtn"
-               :loading="exportLoading"
-               :disabled="exportLoading"
-              @click="exportPng"
-            >
-              {{ $t('common.share') }}
-              <v-icon>share</v-icon>
-            </v-btn>
+          <v-btn class="toolbarBtn" :loading="exportLoading" :disabled="exportLoading" @click="exportMap('svg')">
+            {{ $t('common.share')}} SVG
+            <v-icon>share</v-icon>
+          </v-btn>
+
+          
+          <v-btn class="toolbarBtn" :loading="exportLoading" :disabled="exportLoading" @click="exportMap('png')">
+            {{ $t('common.share')}} PNG
+            <v-icon>image</v-icon>
+          </v-btn>
         </div>
-      
       </div>
     </div>
     <div id="mindMapContainer" class="mindMapContainer"></div>
+    <v-progress-circular v-if="Loading" indeterminate color="green"></v-progress-circular>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import dayjs from "dayjs";
 import MindMap from "simple-mind-map";
 // @ts-ignore
 import TouchEvent from "simple-mind-map/src/plugins/TouchEvent.js";
@@ -77,6 +73,7 @@ export default Vue.extend({
   data() {
     return {
       mindMap: null as MindMap | null,
+      Loading: true,
       exportLoading: false,
     };
   },
@@ -94,27 +91,37 @@ export default Vue.extend({
       //fitPadding: 128
       exportPaddingX: 10,
       exportPaddingY: 10,
+      //开启性能模式
+      //openPerformance: true,
       addContentToFooter: () => {
-          const el = document.createElement('div')
-          el.className = 'footer'
-          el.innerHTML = this.$t("app.name").toString()
-          const cssText = `
+        const el = document.createElement('div')
+        el.className = 'footer'
+        el.innerHTML = ` 
+          ${dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")} Created By ${this.$t("app.name").toString()}
+        `
+        const cssText = `
             .footer {
               width: 100%;
               height: 30px;
               display: flex;
               justify-content: center;
               align-items: center;
-              font-size: 12px;
+              font-size: 20px;
               color: #979797;
             }
+
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
           `
-          return {
-            el,
-            cssText,
-            height: 30
-          }
-        },
+        return {
+          el,
+          cssText,
+          height: 30
+        }
+      },
     });
 
     this.handleShowLoading()
@@ -125,13 +132,10 @@ export default Vue.extend({
       this.mindMap.setData(MapData);
     }
     this.mindMap.view.reset();
-
-    this.mindMap.on('showLoading', this.handleShowLoading);
     this.mindMap.on('node_tree_render_end', this.handleHideLoading);
     window.addEventListener("resize", this.handleResize);
   },
   beforeDestroy() {
-    this.mindMap!.off('showLoading', this.handleShowLoading);
     this.mindMap!.off('node_tree_render_end', this.handleHideLoading);
     window.removeEventListener("resize", this.handleResize);
     this.mindMap!.destroy();
@@ -141,10 +145,12 @@ export default Vue.extend({
       this.mindMap!.resize();
     },
     handleShowLoading() {
+      this.Loading = true;
     },
     handleHideLoading() {
-    },   
-    enterFullScreen(element : any) {
+      this.Loading = false;
+    },
+    enterFullScreen(element: any) {
       if (element.requestFullScreen) {
         element.requestFullScreen()
       } else if (element.webkitRequestFullScreen) {
@@ -159,17 +165,18 @@ export default Vue.extend({
     backToRoot() {
       this.mindMap!.renderer.setRootNodeCenter()
     },
-    async exportPng() {
+    async exportMap(type: string) {
       try {
         this.exportLoading = true;
-        await this.mindMap!.export('png',true,this.$t("app.name").toString())
+        await this.mindMap!.export(type, true, this.$t("app.name").toString())
         this.exportLoading = false;
       } catch (error) {
         console.log('error:', error);
+        this.exportLoading = false;
       }
     },
   }
-  },
+},
 );
 </script>
 
@@ -211,7 +218,7 @@ export default Vue.extend({
     margin-right: 20px;
     flex-shrink: 0;
     position: relative;
-}
+  }
 }
 
 .theme--dark .toolbarContainer {
