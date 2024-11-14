@@ -124,7 +124,10 @@ export default new Router({
     {
       path: "/mind",
       name: "mind",
-      component: () => import("./views/MindMap/Index.vue")
+      component: () => import("./views/MindMap/Index.vue"),
+      meta: {
+        keepAlive: false
+      }
     },
     {
       path: "/statistic/:host?",

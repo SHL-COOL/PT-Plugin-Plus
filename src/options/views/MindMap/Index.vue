@@ -1,7 +1,7 @@
 <template>
-  <div class="container">
+  <div>
     <div class="toolbarContainer">
-      <div v-if="!Loading" class="toolbar">
+      <div v-if="!loading" class="toolbar">
         <div class="toolbarBlock px-3 py-2">
           <v-btn class="toolbarBtn" @click="backToRoot">
             {{ $t('common.rePosition')}} 
@@ -27,7 +27,9 @@
       </div>
     </div>
     <div id="mindMapContainer" class="mindMapContainer"></div>
-    <v-progress-circular v-if="Loading" indeterminate color="green"></v-progress-circular>
+    <div class="progress-wrapper" v-if="loading">
+      <v-progress-circular :size="70" :width="7" class="progress" indeterminate color="green"></v-progress-circular>
+    </div>
   </div>
 </template>
 
@@ -73,9 +75,15 @@ export default Vue.extend({
   data() {
     return {
       mindMap: null as MindMap | null,
-      Loading: true,
+      loading: true,
       exportLoading: false,
+      darkMode: false,
+      themeName: ''
     };
+  },
+  created() {
+    if (localStorage.getItem('DarkMode'))
+      this.darkMode = localStorage.getItem('DarkMode') == 'true';
   },
   mounted() {
     // @ts-ignore
@@ -132,10 +140,15 @@ export default Vue.extend({
       this.mindMap.setData(MapData);
     }
     this.mindMap.view.reset();
+    this.themeName = this.mindMap.getTheme();
+    this.setThemeMode(this.darkMode);
     this.mindMap.on('node_tree_render_end', this.handleHideLoading);
     window.addEventListener("resize", this.handleResize);
+
+    this.$root.$on("ToggleDarkMode",this.toggleDarkMode);
   },
   beforeDestroy() {
+    this.$root.$off("ToggleDarkMode",this.toggleDarkMode);
     this.mindMap!.off('node_tree_render_end', this.handleHideLoading);
     window.removeEventListener("resize", this.handleResize);
     this.mindMap!.destroy();
@@ -145,10 +158,10 @@ export default Vue.extend({
       this.mindMap!.resize();
     },
     handleShowLoading() {
-      this.Loading = true;
+      this.loading = true;
     },
     handleHideLoading() {
-      this.Loading = false;
+      this.loading = false;
     },
     enterFullScreen(element: any) {
       if (element.requestFullScreen) {
@@ -164,6 +177,18 @@ export default Vue.extend({
     },
     backToRoot() {
       this.mindMap!.renderer.setRootNodeCenter()
+    }, 
+    toggleDarkMode() {
+      this.darkMode = !this.darkMode;
+      this.setThemeMode(this.darkMode);
+    },
+    setThemeMode(darkMode : boolean) {
+      this.handleShowLoading()
+      if(darkMode){
+        this.mindMap!.setTheme('blackHumour')
+      }else{
+        this.mindMap!.setTheme(this.themeName)
+      }
     },
     async exportMap(type: string) {
       try {
@@ -187,6 +212,22 @@ export default Vue.extend({
   top: 0;
   width: 100%;
   height: calc(100vh - 64px - 32px);
+}
+
+.progress-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;        
+  height: calc(100vh - 64px - 32px);
+  background-color: rgba(0, 0, 0, 0.9); 
+  display: flex;
+  justify-content: center; 
+  align-items: center;    
+  z-index: 3;
+  .progress{
+    position: relative; 
+  }
 }
 
 .toolbarContainer {
