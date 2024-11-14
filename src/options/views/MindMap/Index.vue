@@ -53,6 +53,8 @@ import OuterFrame from "simple-mind-map/src/plugins/OuterFrame.js";
 import Themes from "simple-mind-map-plugin-themes";
 // @ts-ignore
 import HandDrawnLikeStyle from './handDrawnLikeStyle.esm.min.js'
+// @ts-ignore
+import RichText from 'simple-mind-map/src/plugins/RichText.js'
 
 /**
  * 思维导图在线编辑
@@ -67,6 +69,7 @@ MindMap.usePlugin(TouchEvent)
   .usePlugin(NodeImgAdjust)
   .usePlugin(OuterFrame)
   .usePlugin(Export)
+  .usePlugin(RichText)
   .usePlugin(HandDrawnLikeStyle);
 
 Themes.init(MindMap);
@@ -116,12 +119,6 @@ export default Vue.extend({
               align-items: center;
               font-size: 20px;
               color: #979797;
-            }
-
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
             }
           `
         return {
