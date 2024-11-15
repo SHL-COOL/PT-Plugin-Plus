@@ -37,25 +37,16 @@
 import Vue from "vue";
 import dayjs from "dayjs";
 import MindMap from "simple-mind-map";
-// @ts-ignore
 import TouchEvent from "simple-mind-map/src/plugins/TouchEvent.js";
-// @ts-ignore
 import Drag from "simple-mind-map/src/plugins/Drag.js";
-// @ts-ignore
 import AssociativeLine from "simple-mind-map/src/plugins/AssociativeLine.js";
-// @ts-ignore
 import Select from 'simple-mind-map/src/plugins/Select.js'
-// @ts-ignore
 import Export from 'simple-mind-map/src/plugins/Export.js'
-// @ts-ignore
 import RainbowLines from 'simple-mind-map/src/plugins/RainbowLines.js'
-// @ts-ignore
 import OuterFrame from "simple-mind-map/src/plugins/OuterFrame.js";
-// @ts-ignore
 import Themes from "simple-mind-map-plugin-themes";
 // @ts-ignore
 import HandDrawnLikeStyle from './handDrawnLikeStyle.esm.min.js'
-// @ts-ignore
 import RichText from 'simple-mind-map/src/plugins/RichText.js'
 
 /**
@@ -64,7 +55,6 @@ import RichText from 'simple-mind-map/src/plugins/RichText.js'
  */
 import MapData from "./data.json";
 
-// @ts-ignore
 MindMap.usePlugin(TouchEvent)
   .usePlugin(Drag)
   .usePlugin(AssociativeLine)
@@ -100,13 +90,8 @@ export default Vue.extend({
       mousewheelAction: "zoom",
       emptyTextMeasureHeightText: "",
       textAutoWrapWidth: 1000,
-      //readonly: true,
-      //enableFreeDrag: false,
-      //fitPadding: 128
       exportPaddingX: 10,
       exportPaddingY: 10,
-      //开启性能模式
-      //openPerformance: true,
       addContentToFooter: () => {
         const el = document.createElement('div')
         el.className = 'footer'
@@ -133,7 +118,6 @@ export default Vue.extend({
     });
 
     this.handleShowLoading()
-    // @ts-ignore
     if (MapData.root) {
       this.mindMap.setFullData(MapData);
     } else {
