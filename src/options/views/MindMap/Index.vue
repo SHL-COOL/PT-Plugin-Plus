@@ -4,23 +4,28 @@
       <div v-if="!loading" class="toolbar">
         <div class="toolbarBlock px-3 py-2">
           <v-btn class="toolbarBtn" @click="backToRoot">
-            {{ $t('common.rePosition')}} 
+            {{ $t('common.rePosition') }}
             <v-icon>my_location</v-icon>
           </v-btn>
 
           <v-btn class="toolbarBtn" @click="toFullscreenShow">
-            {{ $t('common.fullScreen')}} 
+            {{ $t('common.fullScreen') }}
             <v-icon>fullscreen</v-icon>
           </v-btn>
 
+          <v-btn class="toolbarBtn" @click="switchData">
+            {{ $t('statistic.data') }}
+            <v-icon>sync</v-icon>
+          </v-btn>
+
           <v-btn class="toolbarBtn" :loading="exportLoading" :disabled="exportLoading" @click="exportMap('svg')">
-            {{ $t('common.share')}} SVG
+            {{ $t('common.share') }} SVG
             <v-icon>share</v-icon>
           </v-btn>
 
-          
+
           <v-btn class="toolbarBtn" :loading="exportLoading" :disabled="exportLoading" @click="exportMap('png')">
-            {{ $t('common.share')}} PNG
+            {{ $t('common.share') }} PNG
             <v-icon>image</v-icon>
           </v-btn>
         </div>
@@ -48,12 +53,27 @@ import Themes from "simple-mind-map-plugin-themes";
 // @ts-ignore
 import HandDrawnLikeStyle from './handDrawnLikeStyle.esm.min.js'
 import RichText from 'simple-mind-map/src/plugins/RichText.js'
+import { Site } from "@/interface/common";
 
 /**
  * 思维导图在线编辑
  * https://wanglin2.github.io/mind-map/#/  导入同目录的data.json文件 在线修改后导出 json文件 覆盖同目录data.json
  */
 import MapData from "./data.json";
+
+interface Node {
+  data: {
+    text: string;
+    expand: boolean;
+    tag?: string[];
+    hyperlink?: string;
+    hyperlinkTitle?: string;
+    fillColor?: string;
+    color?:string;
+  };
+  children: Node[];
+}
+
 
 MindMap.usePlugin(TouchEvent)
   .usePlugin(Drag)
@@ -74,6 +94,7 @@ export default Vue.extend({
       loading: true,
       exportLoading: false,
       darkMode: false,
+      isData: true,
       themeName: ''
     };
   },
@@ -85,7 +106,6 @@ export default Vue.extend({
     // @ts-ignore
     this.mindMap = new MindMap({
       el: document.getElementById("mindMapContainer"),
-      tagPosition: "bottom",
       fit: true,
       mousewheelAction: "zoom",
       emptyTextMeasureHeightText: "",
@@ -117,27 +137,99 @@ export default Vue.extend({
       },
     });
 
-    this.handleShowLoading()
     if (MapData.root) {
-      this.mindMap.setFullData(MapData);
-    } else {
-      this.mindMap.setData(MapData);
+      this.mindMap!.setFullData(MapData);
     }
+    this.setData();
     this.mindMap.view.reset();
-    this.themeName = this.mindMap.getTheme();
-    this.setThemeMode(this.darkMode);
     this.mindMap.on('node_tree_render_end', this.handleHideLoading);
     window.addEventListener("resize", this.handleResize);
-
-    this.$root.$on("ToggleDarkMode",this.toggleDarkMode);
+    this.$root.$on("ToggleDarkMode", this.toggleDarkMode);
   },
   beforeDestroy() {
-    this.$root.$off("ToggleDarkMode",this.toggleDarkMode);
+    this.$root.$off("ToggleDarkMode", this.toggleDarkMode);
     this.mindMap!.off('node_tree_render_end', this.handleHideLoading);
     window.removeEventListener("resize", this.handleResize);
     this.mindMap!.destroy();
   },
   methods: {
+    generateTree(allSites: Site[]) {
+      const groupedBySchema: { [schema: string]: Site[] } = allSites.reduce((acc, item) => {
+        if (!acc[item.schema]) {
+          acc[item.schema] = [];
+        }
+        acc[item.schema].push(item);
+        return acc;
+      }, {} as { [schema: string]: Site[] });
+
+      const rootNode: Node = {
+        data: {
+          text: '站点大全',
+          expand: true,
+        },
+        children: [],
+      };
+
+      for (const schema in groupedBySchema) {
+        const schemaNode: Node = {
+          data: {
+            text: schema,
+            expand: true,
+          },
+          children: [],
+        };
+
+        groupedBySchema[schema].forEach((item: Site) => {
+          const childNode: Node = {
+            data: {
+              text: item.description ? `${item.name}:${item.description}` : item.name,
+              expand: true,
+              hyperlink: item.activeURL,
+              hyperlinkTitle: item.name,
+            },
+            children: [],
+          };
+
+          if (item.tags) {
+            childNode.data.tag = item.tags;
+          }
+          if (item.allowGetUserInfo) {
+            childNode.data.fillColor = 'rgba(164, 221, 0, 1)';
+            childNode.data.color = 'rgba(0, 0, 0, 1)';
+          }
+          schemaNode.children.push(childNode);
+        });
+
+        rootNode.children.push(schemaNode);
+      }
+
+      return rootNode;
+    },
+    switchData() {
+      this.isData = !this.isData;
+      this.setData();
+    },
+    setData() {
+      this.handleShowLoading()
+      this.mindMap!.setData(null);
+      if (this.isData) {
+        const allSites = this.$store.state.options.system.sites.map((site: Site) => {
+          const { description, name, schema, tags, url } = site;
+          const matchingSite = this.$store.state.options.sites.find((showSite: Site) => showSite.name === site.name);
+          return {
+            description, name, schema, tags,
+            allowGetUserInfo: matchingSite ? matchingSite.allowGetUserInfo : false,
+            activeURL: matchingSite ? matchingSite.activeURL : url,
+          };
+        });
+        this.mindMap!.setLayout("catalogOrganization");
+        this.mindMap!.setData(this.generateTree(allSites));
+      } else {
+        this.mindMap!.setFullData(MapData);
+      }
+      this.themeName = this.mindMap!.getTheme();
+      this.setThemeMode(this.darkMode);
+    },
     handleResize() {
       this.mindMap!.resize();
     },
@@ -161,16 +253,16 @@ export default Vue.extend({
     },
     backToRoot() {
       this.mindMap!.renderer.setRootNodeCenter()
-    }, 
+    },
     toggleDarkMode() {
       this.darkMode = !this.darkMode;
       this.setThemeMode(this.darkMode);
     },
-    setThemeMode(darkMode : boolean) {
+    setThemeMode(darkMode: boolean) {
       this.handleShowLoading()
-      if(darkMode){
+      if (darkMode) {
         this.mindMap!.setTheme('blackHumour')
-      }else{
+      } else {
         this.mindMap!.setTheme(this.themeName)
       }
     },
@@ -202,15 +294,16 @@ export default Vue.extend({
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;        
+  width: 100%;
   height: calc(100vh - 64px - 32px);
-  background-color: rgba(0, 0, 0, 0.9); 
+  background-color: rgba(0, 0, 0, 0.9);
   display: flex;
-  justify-content: center; 
-  align-items: center;    
+  justify-content: center;
+  align-items: center;
   z-index: 3;
-  .progress{
-    position: relative; 
+
+  .progress {
+    position: relative;
   }
 }
 
