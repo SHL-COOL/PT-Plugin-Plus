@@ -44,9 +44,11 @@ import Drag from "simple-mind-map/src/plugins/Drag.js";
 // @ts-ignore
 import AssociativeLine from "simple-mind-map/src/plugins/AssociativeLine.js";
 // @ts-ignore
+import Select from 'simple-mind-map/src/plugins/Select.js'
+// @ts-ignore
 import Export from 'simple-mind-map/src/plugins/Export.js'
 // @ts-ignore
-import NodeImgAdjust from "simple-mind-map/src/plugins/NodeImgAdjust.js";
+import RainbowLines from 'simple-mind-map/src/plugins/RainbowLines.js'
 // @ts-ignore
 import OuterFrame from "simple-mind-map/src/plugins/OuterFrame.js";
 // @ts-ignore
@@ -66,8 +68,9 @@ import MapData from "./data.json";
 MindMap.usePlugin(TouchEvent)
   .usePlugin(Drag)
   .usePlugin(AssociativeLine)
-  .usePlugin(NodeImgAdjust)
   .usePlugin(OuterFrame)
+  .usePlugin(RainbowLines)
+  .usePlugin(Select)
   .usePlugin(Export)
   .usePlugin(RichText)
   .usePlugin(HandDrawnLikeStyle);
@@ -97,7 +100,7 @@ export default Vue.extend({
       mousewheelAction: "zoom",
       emptyTextMeasureHeightText: "",
       textAutoWrapWidth: 1000,
-      readonly: true,
+      //readonly: true,
       //enableFreeDrag: false,
       //fitPadding: 128
       exportPaddingX: 10,
