@@ -4,36 +4,45 @@
       <div v-if="!loading" class="toolbar">
         <div class="toolbarBlock px-3 py-2">
           <v-btn class="toolbarBtn" @click="backToRoot">
-            {{ $t('common.rePosition') }}
+            {{ $t("common.rePosition") }}
             <v-icon>my_location</v-icon>
           </v-btn>
 
           <v-btn class="toolbarBtn" @click="toFullscreenShow">
-            {{ $t('common.fullScreen') }}
+            {{ $t("common.fullScreen") }}
             <v-icon>fullscreen</v-icon>
           </v-btn>
 
           <v-btn class="toolbarBtn" @click="switchData">
-            {{ $t('statistic.data') }}
+            {{ $t("statistic.data") }}
             <v-icon>sync</v-icon>
           </v-btn>
 
-          <v-btn class="toolbarBtn" :loading="exportLoading" :disabled="exportLoading" @click="exportMap('svg')">
-            {{ $t('common.share') }} SVG
+          <v-btn
+            class="toolbarBtn"
+            :loading="exportLoading"
+            :disabled="exportLoading"
+            @click="exportMap('svg')"
+          >
+            {{ $t("common.share") }} SVG
             <v-icon>share</v-icon>
           </v-btn>
 
-
-          <v-btn class="toolbarBtn" :loading="exportLoading" :disabled="exportLoading" @click="exportMap('png')">
-            {{ $t('common.share') }} PNG
+          <v-btn
+            class="toolbarBtn"
+            :loading="exportLoading"
+            :disabled="exportLoading"
+            @click="exportMap('png')"
+          >
+            {{ $t("common.share") }} PNG
             <v-icon>image</v-icon>
           </v-btn>
         </div>
       </div>
     </div>
     <div id="mindMapContainer" class="mindMapContainer"></div>
-    <div class="progress-wrapper" v-if="loading">
-      <v-progress-circular :size="70" :width="7" class="progress" indeterminate color="green"></v-progress-circular>
+    <div class="loading-wrapper display-2" v-if="loading">
+      {{ $t("common.loading") }}
     </div>
   </div>
 </template>
@@ -45,14 +54,14 @@ import MindMap from "simple-mind-map";
 import TouchEvent from "simple-mind-map/src/plugins/TouchEvent.js";
 import Drag from "simple-mind-map/src/plugins/Drag.js";
 import AssociativeLine from "simple-mind-map/src/plugins/AssociativeLine.js";
-import Select from 'simple-mind-map/src/plugins/Select.js'
-import Export from 'simple-mind-map/src/plugins/Export.js'
-import RainbowLines from 'simple-mind-map/src/plugins/RainbowLines.js'
+import Select from "simple-mind-map/src/plugins/Select.js";
+import Export from "simple-mind-map/src/plugins/Export.js";
+import RainbowLines from "simple-mind-map/src/plugins/RainbowLines.js";
 import OuterFrame from "simple-mind-map/src/plugins/OuterFrame.js";
 import Themes from "simple-mind-map-plugin-themes";
 // @ts-ignore
-import HandDrawnLikeStyle from './handDrawnLikeStyle.esm.min.js'
-import RichText from 'simple-mind-map/src/plugins/RichText.js'
+import HandDrawnLikeStyle from "./handDrawnLikeStyle.esm.min.js";
+import RichText from "simple-mind-map/src/plugins/RichText.js";
 import { Site } from "@/interface/common";
 
 /**
@@ -69,11 +78,10 @@ interface Node {
     hyperlink?: string;
     hyperlinkTitle?: string;
     fillColor?: string;
-    color?:string;
+    color?: string;
   };
   children: Node[];
 }
-
 
 MindMap.usePlugin(TouchEvent)
   .usePlugin(Drag)
@@ -95,12 +103,12 @@ export default Vue.extend({
       exportLoading: false,
       darkMode: false,
       isData: true,
-      themeName: ''
+      themeName: "",
     };
   },
   created() {
-    if (localStorage.getItem('DarkMode'))
-      this.darkMode = localStorage.getItem('DarkMode') == 'true';
+    if (localStorage.getItem("DarkMode"))
+      this.darkMode = localStorage.getItem("DarkMode") == "true";
   },
   mounted() {
     // @ts-ignore
@@ -113,11 +121,13 @@ export default Vue.extend({
       exportPaddingX: 10,
       exportPaddingY: 10,
       addContentToFooter: () => {
-        const el = document.createElement('div')
-        el.className = 'footer'
+        const el = document.createElement("div");
+        el.className = "footer";
         el.innerHTML = ` 
-          ${dayjs(new Date()).format("YYYY-MM-DD HH:mm:ss")} Created By ${this.$t("app.name").toString()}
-        `
+          ${dayjs(new Date()).format(
+            "YYYY-MM-DD HH:mm:ss"
+          )} Created By ${this.$t("app.name").toString()}
+        `;
         const cssText = `
             .footer {
               width: 100%;
@@ -128,12 +138,12 @@ export default Vue.extend({
               font-size: 20px;
               color: #979797;
             }
-          `
+          `;
         return {
           el,
           cssText,
-          height: 30
-        }
+          height: 30,
+        };
       },
     });
 
@@ -142,29 +152,32 @@ export default Vue.extend({
     }
     this.setData();
     this.mindMap.view.reset();
-    this.mindMap.on('node_tree_render_end', this.handleHideLoading);
+    this.mindMap.on("node_tree_render_end", this.handleHideLoading);
     window.addEventListener("resize", this.handleResize);
     this.$root.$on("ToggleDarkMode", this.toggleDarkMode);
   },
   beforeDestroy() {
     this.$root.$off("ToggleDarkMode", this.toggleDarkMode);
-    this.mindMap!.off('node_tree_render_end', this.handleHideLoading);
+    this.mindMap!.off("node_tree_render_end", this.handleHideLoading);
     window.removeEventListener("resize", this.handleResize);
     this.mindMap!.destroy();
   },
   methods: {
     generateTree(allSites: Site[]) {
-      const groupedBySchema: { [schema: string]: Site[] } = allSites.reduce((acc, item) => {
-        if (!acc[item.schema]) {
-          acc[item.schema] = [];
-        }
-        acc[item.schema].push(item);
-        return acc;
-      }, {} as { [schema: string]: Site[] });
+      const groupedBySchema: { [schema: string]: Site[] } = allSites.reduce(
+        (acc, item) => {
+          if (!acc[item.schema]) {
+            acc[item.schema] = [];
+          }
+          acc[item.schema].push(item);
+          return acc;
+        },
+        {} as { [schema: string]: Site[] }
+      );
 
       const rootNode: Node = {
         data: {
-          text: '站点大全',
+          text: "站点大全",
           expand: true,
         },
         children: [],
@@ -182,7 +195,9 @@ export default Vue.extend({
         groupedBySchema[schema].forEach((item: Site) => {
           const childNode: Node = {
             data: {
-              text: item.description ? `${item.name}:${item.description}` : item.name,
+              text: item.description
+                ? `${item.name}:${item.description}`
+                : item.name,
               expand: true,
               hyperlink: item.activeURL,
               hyperlinkTitle: item.name,
@@ -194,8 +209,8 @@ export default Vue.extend({
             childNode.data.tag = item.tags;
           }
           if (item.allowGetUserInfo) {
-            childNode.data.fillColor = 'rgba(164, 221, 0, 1)';
-            childNode.data.color = 'rgba(0, 0, 0, 1)';
+            childNode.data.fillColor = "rgba(164, 221, 0, 1)";
+            childNode.data.color = "rgba(0, 0, 0, 1)";
           }
           schemaNode.children.push(childNode);
         });
@@ -210,18 +225,27 @@ export default Vue.extend({
       this.setData();
     },
     setData() {
-      this.handleShowLoading()
+      this.handleShowLoading();
       this.mindMap!.setData(null);
       if (this.isData) {
-        const allSites = this.$store.state.options.system.sites.map((site: Site) => {
-          const { description, name, schema, tags, url } = site;
-          const matchingSite = this.$store.state.options.sites.find((showSite: Site) => showSite.name === site.name);
-          return {
-            description, name, schema, tags,
-            allowGetUserInfo: matchingSite ? matchingSite.allowGetUserInfo : false,
-            activeURL: matchingSite ? matchingSite.activeURL : url,
-          };
-        });
+        const allSites = this.$store.state.options.system.sites.map(
+          (site: Site) => {
+            const { description, name, schema, tags, url } = site;
+            const matchingSite = this.$store.state.options.sites.find(
+              (showSite: Site) => showSite.name === site.name
+            );
+            return {
+              description,
+              name,
+              schema,
+              tags,
+              allowGetUserInfo: matchingSite
+                ? matchingSite.allowGetUserInfo
+                : false,
+              activeURL: matchingSite ? matchingSite.activeURL : url,
+            };
+          }
+        );
         this.mindMap!.setLayout("catalogOrganization");
         this.mindMap!.setData(this.generateTree(allSites));
       } else {
@@ -241,44 +265,43 @@ export default Vue.extend({
     },
     enterFullScreen(element: any) {
       if (element.requestFullScreen) {
-        element.requestFullScreen()
+        element.requestFullScreen();
       } else if (element.webkitRequestFullScreen) {
-        element.webkitRequestFullScreen()
+        element.webkitRequestFullScreen();
       } else if (element.mozRequestFullScreen) {
-        element.mozRequestFullScreen()
+        element.mozRequestFullScreen();
       }
     },
     toFullscreenShow() {
-      this.enterFullScreen(this.mindMap!.el)
+      this.enterFullScreen(this.mindMap!.el);
     },
     backToRoot() {
-      this.mindMap!.renderer.setRootNodeCenter()
+      this.mindMap!.renderer.setRootNodeCenter();
     },
     toggleDarkMode() {
       this.darkMode = !this.darkMode;
       this.setThemeMode(this.darkMode);
     },
     setThemeMode(darkMode: boolean) {
-      this.handleShowLoading()
+      this.handleShowLoading();
       if (darkMode) {
-        this.mindMap!.setTheme('blackHumour')
+        this.mindMap!.setTheme("blackHumour");
       } else {
-        this.mindMap!.setTheme(this.themeName)
+        this.mindMap!.setTheme(this.themeName);
       }
     },
     async exportMap(type: string) {
       try {
         this.exportLoading = true;
-        await this.mindMap!.export(type, true, this.$t("app.name").toString())
+        await this.mindMap!.export(type, true, this.$t("app.name").toString());
         this.exportLoading = false;
       } catch (error) {
-        console.log('error:', error);
+        console.log("error:", error);
         this.exportLoading = false;
       }
     },
-  }
-},
-);
+  },
+});
 </script>
 
 <style lang="scss" scoped>
@@ -290,18 +313,18 @@ export default Vue.extend({
   height: calc(100vh - 64px - 32px);
 }
 
-.progress-wrapper {
+.loading-wrapper {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: calc(100vh - 64px - 32px);
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(255, 255, 255, 0.9);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 3;
-
+  color: #000;
   .progress {
     position: relative;
   }
@@ -318,7 +341,6 @@ export default Vue.extend({
     z-index: 2;
   }
 
-
   .toolbarBtn {
     display: flex;
     justify-content: center;
@@ -331,8 +353,8 @@ export default Vue.extend({
     display: flex;
     border-radius: 6px;
     background-color: #fff;
-    box-shadow: 0 2px 16px 0 rgba(0, 0, 0, .06);
-    border: 1px solid rgba(0, 0, 0, .06);
+    box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.06);
     margin-right: 20px;
     flex-shrink: 0;
     position: relative;
@@ -343,5 +365,10 @@ export default Vue.extend({
   .toolbarBlock {
     background-color: #262a2e;
   }
+}
+
+.theme--dark .loading-wrapper {
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #fff;
 }
 </style>
