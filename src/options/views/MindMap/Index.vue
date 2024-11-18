@@ -13,11 +13,6 @@
             <v-icon>fullscreen</v-icon>
           </v-btn>
 
-          <v-btn class="toolbarBtn" @click="switchData">
-            {{ $t("statistic.data") }}
-            <v-icon>sync</v-icon>
-          </v-btn>
-
           <v-btn
             class="toolbarBtn"
             :loading="exportLoading"
@@ -64,10 +59,6 @@ import HandDrawnLikeStyle from "./handDrawnLikeStyle.esm.min.js";
 import RichText from "simple-mind-map/src/plugins/RichText.js";
 import { Site } from "@/interface/common";
 
-/**
- * 思维导图在线编辑
- * https://wanglin2.github.io/mind-map/#/  导入同目录的data.json文件 在线修改后导出 json文件 覆盖同目录data.json
- */
 import MapData from "./data.json";
 
 interface Node {
@@ -102,7 +93,6 @@ export default Vue.extend({
       loading: true,
       exportLoading: false,
       darkMode: false,
-      isData: true,
       themeName: "",
     };
   },
@@ -145,13 +135,15 @@ export default Vue.extend({
           height: 30,
         };
       },
+      tagsColorMap: {
+        综合: 'red',
+        成人: '#ca9d00',
+        影视: '#007db3'
+      }
     });
 
-    if (MapData.root) {
-      this.mindMap!.setFullData(MapData);
-    }
+    this.mindMap!.setFullData(MapData);
     this.setData();
-    this.mindMap.view.reset();
     this.mindMap.on("node_tree_render_end", this.handleHideLoading);
     window.addEventListener("resize", this.handleResize);
     this.$root.$on("ToggleDarkMode", this.toggleDarkMode);
@@ -177,7 +169,7 @@ export default Vue.extend({
 
       const rootNode: Node = {
         data: {
-          text: "站点大全",
+          text: this.$t("app.name").toString(),
           expand: true,
         },
         children: [],
@@ -220,39 +212,31 @@ export default Vue.extend({
 
       return rootNode;
     },
-    switchData() {
-      this.isData = !this.isData;
-      this.setData();
-    },
     setData() {
       this.handleShowLoading();
       this.mindMap!.setData(null);
-      if (this.isData) {
-        const allSites = this.$store.state.options.system.sites.map(
-          (site: Site) => {
-            const { description, name, schema, tags, url } = site;
-            const matchingSite = this.$store.state.options.sites.find(
-              (showSite: Site) => showSite.name === site.name
-            );
-            return {
-              description,
-              name,
-              schema,
-              tags,
-              allowGetUserInfo: matchingSite
-                ? matchingSite.allowGetUserInfo
-                : false,
-              activeURL: matchingSite ? matchingSite.activeURL : url,
-            };
-          }
-        );
-        this.mindMap!.setLayout("catalogOrganization");
-        this.mindMap!.setData(this.generateTree(allSites));
-      } else {
-        this.mindMap!.setFullData(MapData);
-      }
+      const allSites = this.$store.state.options.system.sites.map(
+        (site: Site) => {
+          const { description, name, schema, tags, url } = site;
+          const matchingSite = this.$store.state.options.sites.find(
+            (showSite: Site) => showSite.name === site.name
+          );
+          return {
+            description,
+            name,
+            schema,
+            tags,
+            allowGetUserInfo: matchingSite
+              ? matchingSite.allowGetUserInfo
+              : false,
+            activeURL: matchingSite ? matchingSite.activeURL : url,
+          };
+        }
+      );
+      this.mindMap!.setData(this.generateTree(allSites));
       this.themeName = this.mindMap!.getTheme();
       this.setThemeMode(this.darkMode);
+      this.mindMap!.view.reset();
     },
     handleResize() {
       this.mindMap!.resize();
@@ -368,7 +352,7 @@ export default Vue.extend({
 }
 
 .theme--dark .loading-wrapper {
-    background-color: rgba(0, 0, 0, 0.9);
-    color: #fff;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: #fff;
 }
 </style>
